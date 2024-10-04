@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مدير البيانات</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #F3F4F6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #003366;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #f0c542;
+        }
+
+        .container {
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        button {
+            background-color: #0056b3;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            margin: 10px;
+            font-size: 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #003366;
+        }
+
+        .info {
+            background-color: #ffffff;
+            padding: 20px;
+            margin: 20px auto;
+            border-radius: 10px;
+            max-width: 800px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .info h3 {
+            color: #003366;
+        }
+
+        input,
+        select {
+            padding: 10px;
+            margin: 10px 0;
+            width: 80%;
+            max-width: 400px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        footer {
+            background-color: #003366;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .search-result {
+            margin-top: 20px;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #ccc;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f0c542;
+        }
+
+        #currentTime {
+            font-size: 1.2rem;
+            color: #003366;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>مدير البيانات</h1>
+        <h2>مديرية الأمن العام</h2>
+    </header>
+
+    <div class="container" id="main-container">
+        <h2>تسجيل الدخول كمدير بيانات</h2>
+        <input type="text" id="managerEmail" placeholder="البريد الإلكتروني">
+        <input type="password" id="managerPassword" placeholder="كلمة المرور">
+        <div>
+            <input type="checkbox" id="rememberMe">
+            <label for="rememberMe">تذكرني</label>
+        </div>
+        <button id="loginManagerButton">دخول مدير البيانات</button>
+    </div>
+
+    <footer>
+        © 2024 مديرية الأمن العام - المملكة الأردنية الهاشمية
+    </footer>
+
+    <script>
+        const managerEmail = 'ashrf@gid.jo';
+        const managerPassword = 'Ashrf@2005';
+
+        let individualsData = {}; // لتخزين بيانات الأفراد
+        let approvalsData = {}; // لتخزين بيانات الموافقات الأمنية
+
+        document.getElementById("loginManagerButton").addEventListener("click", loginAsManager);
+
+        function loginAsManager() {
+            const email = document.getElementById('managerEmail').value;
+            const password = document.getElementById('managerPassword').value;
+
+            if (email === managerEmail && password === managerPassword) {
+                loadManagerDashboard();
+            } else {
+                alert("البريد الإلكتروني أو كلمة المرور غير صحيحة");
+            }
+        }
+
+        function loadManagerDashboard() {
+            document.getElementById('main-container').innerHTML = `
+                <h1>لوحة تحكم مدير البيانات</h1>
+                <div id="currentTime"></div>
+                <button onclick="registerIndividual()">تسجيل الأفراد</button>
+                <button onclick="securityApprovals()">الموافقات الأمنية</button>
+                <button onclick="auditIndividuals()">التدقيق على الأفراد</button>
+                <button onclick="viewApprovals()">عرض الموافقات</button>
+                <button onclick="controlNewUsers()">التحكم بالمستخدمين الجدد</button>
+                <div class="info" id="allUsersInfo"></div>
+            `;
+            loadAllUsers();
+            displayCurrentTime(); // عرض التاريخ والوقت
+        }
+
+        function displayCurrentTime() {
+            const currentTimeDiv = document.getElementById('currentTime');
+            const options = {
+                timeZone: 'Asia/Amman', // منطقة التوقيت
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            };
+            const dateTimeString = new Intl.DateTimeFormat('ar-JO', options).format(new Date());
+            currentTimeDiv.textContent = `التاريخ والوقت الحالي: ${dateTimeString}`;
+        }
+
+        function registerIndividual() {
+            document.getElementById('main-container').innerHTML = `
+                <h1>تسجيل الأفراد</h1>
+                <input type="text" id="fullName" placeholder="الاسم"><br>
+                <input type="text" id="nationalId" placeholder="الرقم الوطني"><br>
+                <input type="date" id="birthdate"><br>
+                <input type="text" id="workplace" placeholder="جهة العمل"><br>
+                <input type="text" id="phoneNumber" placeholder="رقم الهاتف"><br>
+                <input type="text" id="residence" placeholder="مكان الإقامة"><br>
+
+                <label for="criminalRecord">القيود والاسباقيات:</label>
+                <select id="criminalRecord">
+                    <option value="لايوجد">لا يوجد</option>
+                    <option value="سرقة">سرقة</option>
+                    <option value="سلب">سلب</option>
+                    <option value="سطو">سطو</option>
+                    <option value="تهديد">تهديد</option>
+                    <option value="حيازة سلاح غير مرخص">حيازة سلاح غير مرخص</option>
+                    <option value="إطلاق العيارات النارية">إطلاق العيارات النارية</option>
+                    <option value="شروع بالقتل">شروع بالقتل</option>
+                    <option value="القتل العمد">القتل العمد</option>
+                    <option value="ترويج مخدرات">ترويج مخدرات</option>
+                    <option value="تعاطي المخدرات">تعاطي المخدرات</option>
+                    <option value="هتك عرض">هتك عرض</option>
+                    <option value="اغتصاب">اغتصاب</option>
+                    <option value="مقاومة رجال الأمن">مقاومة رجال الأمن</option>
+                    <option value="ارهاب">ارهاب</option>
+                    <option value="غسيل أموال">غسيل أموال</option>
+                    <option value="تزوير">تزوير</option>
+                    <option value="رشوة">رشوة</option>
+                    <option value="اختلاس">اختلاس</option>
+                    <option value="مشاجرة">مشاجرة</option>
+                    <option value="تجارة الأعضاء البشرية">تجارة الأعضاء البشرية</option>
+                    <option value="تسبب بالوفاة">تسبب بالوفاة</option>
+                    <option value="دهس ولاذ بالفرار">دهس ولاذ بالفرار</option>
+                    <option value="تواصل ودعم منظمات إرهابية">تواصل ودعم منظمات إرهابية</option>
+                    <option value="سب الذات الإلهية">سب الذات الإلهية</option>
+                    <option value="استعراض قوة">استعراض قوة</option>
+                    <option value="بلطجة">بلطجة</option>
+               <option value="إتاوة">إتاوة</option>
+                </select><br>
+                <button onclick="submitIndividual()">تسجيل الفرد</button>
+                <button onclick="backToDashboard()">رجوع إلى لوحة التحكم</button>
+            `;
+        }
+
+        function submitIndividual() {
+            const fullName = document.getElementById('fullName').value;
+            const nationalId = document.getElementById('nationalId').value;
+            const birthdate = document.getElementById('birthdate').value;
+            const workplace = document.getElementById('workplace').value;
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            const residence = document.getElementById('residence').value;
+            const criminalRecord = document.getElementById('criminalRecord').value;
+
+            // التحقق من إدخال جميع البيانات
+            if (!fullName || !nationalId || !birthdate || !workplace || !phoneNumber || !residence) {
+                alert("يرجى ملء جميع الحقول.");
+                return;
+            }
+
+            // تخزين بيانات الفرد
+            const individual = {
+                fullName,
+                nationalId,
+                birthdate,
+                workplace,
+                phoneNumber,
+                residence,
+                criminalRecord
+            };
+
+            individualsData[nationalId] = individual; // استخدام الرقم الوطني كمفتاح
+
+            alert("تم تسجيل الفرد بنجاح!");
+            loadManagerDashboard(); // العودة إلى لوحة التحكم
+        }
+
+        function backToDashboard() {
+            loadManagerDashboard();
+        }
+
+        function securityApprovals() {
+            document.getElementById('main-container').innerHTML = `
+                <h1>الموافقات الأمنية</h1>
+                <input type="text" id="approvalId" placeholder="معرف الموافقة">
+                <button onclick="viewApprovalDetails()">عرض تفاصيل الموافقة</button>
+                <button onclick="backToDashboard()">رجوع إلى لوحة التحكم</button>
+                <div id="approvalDetails" class="info"></div>
+            `;
+        }
+
+        function viewApprovalDetails() {
+            const approvalId = document.getElementById('approvalId').value;
+
+            // مثال على الحصول على تفاصيل الموافقة (يجب تحديثها لتكون فعالة)
+            const approval = approvalsData[approvalId];
+            const detailsDiv = document.getElementById('approvalDetails');
+
+            if (approval) {
+                detailsDiv.innerHTML = `
+                    <h3>تفاصيل الموافقة</h3>
+                    <p>اسم الفرد: ${approval.fullName}</p>
+                    <p>الرقم الوطني: ${approval.nationalId}</p>
+                    <p>التاريخ: ${approval.date}</p>
+                    <p>الحالة: ${approval.status}</p>
+                `;
+            } else {
+                detailsDiv.innerHTML = "<p>لا توجد تفاصيل لموافقة بهذا المعرف.</p>";
+            }
+        }
+
+        function auditIndividuals() {
+            document.getElementById('main-container').innerHTML = `
+                <h1>التدقيق على الأفراد</h1>
+                <div class="info" id="auditResults"></div>
+                <button onclick="backToDashboard()">رجوع إلى لوحة التحكم</button>
+            `;
+
+            const auditResultsDiv = document.getElementById('auditResults');
+            auditResultsDiv.innerHTML = "<h3>بيانات الأفراد المسجلين:</h3>";
+
+            for (const id in individualsData) {
+                const individual = individualsData[id];
+                auditResultsDiv.innerHTML += `
+                    <p>اسم: ${individual.fullName}, رقم وطني: ${individual.nationalId}</p>
+                `;
+            }
+        }
+
+        function viewApprovals() {
+            document.getElementById('main-container').innerHTML = `
+                <h1>عرض الموافقات</h1>
+                <div class="info" id="approvalsList"></div>
+                <button onclick="backToDashboard()">رجوع إلى لوحة التحكم</button>
+            `;
+
+            const approvalsListDiv = document.getElementById('approvalsList');
+            approvalsListDiv.innerHTML = "<h3>قائمة الموافقات:</h3>";
+
+            for (const id in approvalsData) {
+                const approval = approvalsData[id];
+                approvalsListDiv.innerHTML += `
+                    <p>معرف: ${id}, اسم: ${approval.fullName}, الحالة: ${approval.status}</p>
+                `;
+            }
+        }
+
+        function controlNewUsers() {
+            document.getElementById('main-container').innerHTML = `
+                <h1>التحكم بالمستخدمين الجدد</h1>
+                <button onclick="backToDashboard()">رجوع إلى لوحة التحكم</button>
+                <div class="info" id="newUsersControl"></div>
+            `;
+            // هنا يمكنك إضافة الكود اللازم للتحكم بالمستخدمين الجدد
+        }
+    </script>
+</body>
+
+</html>     
